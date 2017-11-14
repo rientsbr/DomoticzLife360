@@ -3,6 +3,7 @@
     <params>
         <param field="Username" label="Life360 Username" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
+        <param field="Mode2" label="Poll Period (sec)" width="75px" required="true" default="120"/>
         <param field="Mode6" label="Debug" width="75px">
             <options>
                 <option label="True" value="Debug"/>
@@ -58,7 +59,7 @@ class BasePlugin:
         Domoticz.Debug("Devices created.")
         DumpConfigToLog()
 
-        Domoticz.Heartbeat(30)
+        Domoticz.Heartbeat(int(Parameters["Mode2"]))
 
     def onStop(self):
         Domoticz.Log("onStop called")
