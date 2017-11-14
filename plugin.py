@@ -95,7 +95,7 @@ class BasePlugin:
             else:
                 UpdateDevice(member,0,'Off')
             UpdateDevice(member+membercount,1,circle['members'][member-1]['location']['name'])
-            UpdateDevice(member+(2*membercount),int(circle['members'][member-1]['location']['battery']),circle['members'][member-1]['location']['battery'])
+            UpdateDevice(member+(2*membercount),int(float(circle['members'][member-1]['location']['battery'])),circle['members'][member-1]['location']['battery'])
 
 
 global _plugin
