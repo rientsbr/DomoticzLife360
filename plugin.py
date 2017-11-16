@@ -3,7 +3,7 @@
     <params>
         <param field="Username" label="Life360 Username" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
-        <param field="Mode2" label="Poll Period (sec)" width="75px" required="true" default="120"/>
+        <param field="Mode2" label="Poll Period (min)" width="75px" required="true" default="2"/>
         <param field="Mode6" label="Debug" width="75px">
             <options>
                 <option label="True" value="Debug"/>
@@ -29,10 +29,12 @@ class BasePlugin:
         global membercount
         global circles
         global id
+        global pollPeriod
+        global pollCount
 
         if (Parameters["Mode6"] == "Debug"):
             Domoticz.Debugging(1)
-            
+
         Domoticz.Log("onStart called")
         api = life360(authorization_token=self.authorization_token, username=Parameters["Username"], password=Parameters["Password"])
         if api.authenticate():
@@ -59,7 +61,10 @@ class BasePlugin:
         Domoticz.Debug("Devices created.")
         DumpConfigToLog()
 
-        Domoticz.Heartbeat(int(Parameters["Mode2"]))
+
+        pollCount = 0
+        pollPeriod = 6 * int(Parameters["Mode2"])
+        Domoticz.Heartbeat(10)
 
     def onStop(self):
         Domoticz.Log("onStop called")
@@ -80,22 +85,31 @@ class BasePlugin:
         Domoticz.Log("onDisconnect called")
 
     def onHeartbeat(self):
-        Domoticz.Log("onHeartbeat called")
-        api = life360(authorization_token=self.authorization_token, username=Parameters["Username"], password=Parameters["Password"])
-        if api.authenticate():
+        global pollCount
+        Domoticz.Debug("onHeartBeat called:"+str(pollCount)+"/"+str(pollPeriod))
+        if pollCount >= pollPeriod:
+            Domoticz.Log("Checkin Circle...")
+            api = life360(authorization_token=self.authorization_token, username=Parameters["Username"], password=Parameters["Password"])
+            if api.authenticate():
                 #Let's get your circle!
-            circle = api.get_circle(id)
-            Domoticz.Debug("Family Circle:"+str(circle))
-        else:
-            Domoticz.Log("Error authenticating...")
-
-        for member in range (1,membercount+1):
-            if circle['members'][member-1]['location']['name'] == 'Home':
-                UpdateDevice(member,1,'On')
+                circle = api.get_circle(id)
+                Domoticz.Debug("Family Circle:"+str(circle))
             else:
-                UpdateDevice(member,0,'Off')
-            UpdateDevice(member+membercount,1,circle['members'][member-1]['location']['name'])
-            UpdateDevice(member+(2*membercount),int(float(circle['members'][member-1]['location']['battery'])),circle['members'][member-1]['location']['battery'])
+                Domoticz.Log("Error authenticating...")
+
+            for member in range (1,membercount+1):
+                if circle['members'][member-1]['location']['name'] == 'Home':
+                    UpdateDevice(member,1,'On')
+                else:
+                    UpdateDevice(member,0,'Off')
+                if circle['members'][member-1]['location']['name'] == None:
+                    UpdateDevice(member+membercount,0,'None')
+                else:
+                    UpdateDevice(member+membercount,1,circle['members'][member-1]['location']['name'])
+                UpdateDevice(member+(2*membercount),int(float(circle['members'][member-1]['location']['battery'])),circle['members'][member-1]['location']['battery'])
+            pollCount = 0 #Reset Pollcount
+        else:
+            pollCount = pollCount + 1
 
 
 global _plugin
