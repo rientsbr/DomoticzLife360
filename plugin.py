@@ -77,6 +77,15 @@ class BasePlugin:
 
     def onCommand(self, Unit, Command, Level, Hue):
         Domoticz.Log("onCommand called for Unit " + str(Unit) + ": Parameter '" + str(Command) + "', Level: " + str(Level))
+        Command = Command.strip()
+        action, sep, params = Command.partition(' ')
+        action = action.capitalize()
+        params = params.capitalize()
+ 
+        if Command=='Off':
+            UpdateDevice(Unit,0,'Off')
+        elif Command=='On':
+            UpdateDevice(Unit,1,'On')
 
     def onNotification(self, Name, Subject, Text, Status, Priority, Sound, ImageFile):
         Domoticz.Log("Notification: " + Name + "," + Subject + "," + Text + "," + Status + "," + str(Priority) + "," + Sound + "," + ImageFile)
