@@ -1,5 +1,5 @@
 """
-<plugin key="Life360" name="Life 360 Presence" author="febalci" version="1.0.1">
+<plugin key="Life360" name="Life 360 Presence" author="febalci" version="1.0.0">
     <params>
         <param field="Username" label="Life360 Username" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
@@ -36,6 +36,9 @@ class BasePlugin:
             Domoticz.Debugging(1)
 
         Domoticz.Log("onStart called")
+        if ("Life360Presence" not in Images):
+           Domoticz.Image('Life360Presenceicon.zip').Create()
+        iconPID = Images["Life360Presence"].ID
         api = life360(authorization_token=self.authorization_token, username=Parameters["Username"], password=Parameters["Password"])
         if api.authenticate():
             Domoticz.Debug("API Authenticated")
@@ -55,15 +58,15 @@ class BasePlugin:
 
         if (len(Devices) == 0):
             for member in range (1,membercount+1):
-                Domoticz.Device(Name=circle['members'][member-1]['firstName']+' Presence', Unit=member, TypeName="Switch", Used=1).Create()
+                Domoticz.Device(Name=circle['members'][member-1]['firstName']+' Presence', Unit=member, TypeName="Switch", Image=iconPID, Used=1).Create()
                 Domoticz.Device(Name=circle['members'][member-1]['firstName']+' Location', Unit=member+membercount, TypeName="Text", Used=0).Create()
-                Domoticz.Device(Name=circle['members'][member-1]['firstName']+' Battery',Unit=member+(2*membercount), TypeName="Percentage", Used=0).Create() 
+                Domoticz.Device(Name=circle['members'][member-1]['firstName']+' Battery',Unit=member+(2*membercount), TypeName="Percentage", Used=1).Create() 
         Domoticz.Debug("Devices created.")
         DumpConfigToLog()
 
 
-        pollCount = 0
         pollPeriod = 6 * int(Parameters["Mode2"])
+        pollCount = pollPeriod - 1
         Domoticz.Heartbeat(10)
 
     def onStop(self):
