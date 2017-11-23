@@ -1,9 +1,10 @@
 """
-<plugin key="Life360" name="Life 360 Presence" author="febalci" version="1.0.0">
+<plugin key="Life360" name="Life 360 Presence" author="febalci" version="1.0.2">
     <params>
         <param field="Username" label="Life360 Username" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
         <param field="Mode2" label="Poll Period (min)" width="75px" required="true" default="2"/>
+        <param field="Mode3" label="Google Maps API Key" width="300px" required="false"/>        
         <param field="Mode6" label="Debug" width="75px">
             <options>
                 <option label="True" value="Debug"/>
@@ -17,6 +18,7 @@ import Domoticz
 import datetime
 
 from life360 import life360
+from googlemapsapi import googlemapsapi
 
 class BasePlugin:
     authorization_token = "cFJFcXVnYWJSZXRyZTRFc3RldGhlcnVmcmVQdW1hbUV4dWNyRUh1YzptM2ZydXBSZXRSZXN3ZXJFQ2hBUHJFOTZxYWtFZHI0Vg=="
@@ -31,6 +33,7 @@ class BasePlugin:
         global id
         global pollPeriod
         global pollCount
+        global googleapikey
 
         if (Parameters["Mode6"] == "Debug"):
             Domoticz.Debugging(1)
@@ -39,6 +42,7 @@ class BasePlugin:
         if ("Life360Presence" not in Images):
            Domoticz.Image('Life360Presenceicon.zip').Create()
         iconPID = Images["Life360Presence"].ID
+
         api = life360(authorization_token=self.authorization_token, username=Parameters["Username"], password=Parameters["Password"])
         if api.authenticate():
             Domoticz.Debug("API Authenticated")
@@ -64,7 +68,10 @@ class BasePlugin:
         Domoticz.Debug("Devices created.")
         DumpConfigToLog()
 
-
+        if (Parameters["Mode3"] == ""):
+            googleapikey = 'Empty'
+        else:
+            googleapikey = Parameters["Mode3"]
         pollPeriod = 6 * int(Parameters["Mode2"])
         pollCount = pollPeriod - 1
         Domoticz.Heartbeat(10)
@@ -114,10 +121,17 @@ class BasePlugin:
                     UpdateDevice(member,1,'On')
                 else:
                     UpdateDevice(member,0,'Off')
+                    
                 if circle['members'][member-1]['location']['name'] == None:
-                    UpdateDevice(member+membercount,0,'None')
+                    if googleapikey != 'Empty':
+                        a = googlemapsapi()
+                        currentloc = a.getaddress(googleapikey,circle['members'][member-1]['location']['latitude'],circle['members'][member-1]['location']['longitude'])
+                    else:
+                        currentloc = 'None'
                 else:
-                    UpdateDevice(member+membercount,1,circle['members'][member-1]['location']['name'])
+                    currentloc = circle['members'][member-1]['location']['name']
+                UpdateDevice(member+membercount,1,currentloc)
+ 
                 UpdateDevice(member+(2*membercount),int(float(circle['members'][member-1]['location']['battery'])),circle['members'][member-1]['location']['battery'])
             pollCount = 0 #Reset Pollcount
         else:
