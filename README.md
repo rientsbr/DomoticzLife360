@@ -1,4 +1,6 @@
 # DomoticzLife360
+### * If updating from earlier versions of 1.0.3 to latest 1.0.3, please delete the old plugin from Domoticz Hardware and readd the 1.0.3. Required to create the device order txt file in order to handle Issue #5.
+
 This is a Domoticz Plugin for Life 360
 
 You get 3 device types: At Home Presence, Location and Battery Percentage
