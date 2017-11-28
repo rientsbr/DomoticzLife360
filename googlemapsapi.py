@@ -14,13 +14,20 @@ class googlemapsapi:
         }
 
         request = urllib.request.Request(url, headers=headers)
-        r = urllib.request.urlopen(request)
-
-        jsonr = json.loads(r.read().decode('utf-8'))
+        try:
+            r = urllib.request.urlopen(request)
+        except URLError as e:
+            if hasattr(e, 'reason'):
+                jsonr = 'No Google Server Conn. (Reason:'+e.reason+')'
+            elif hasattr(e, 'code'):
+                jsonr = 'Google Server Fail (Code:'+e.code+')'
+        else:
+            jsonj = json.loads(r.read().decode('utf-8'))
+            jsonr = jsonj['results'][0]['formatted_address']
         return jsonr
 
     def getaddress(self,apikey,lat,lon):
         url=self.rgeocodeaddr+str(lat)+','+str(lon)+'&key='+str(apikey)
         req = self.make_request(url=url)
-        r = req['results'][0]['formatted_address']
+        r = req
         return r
