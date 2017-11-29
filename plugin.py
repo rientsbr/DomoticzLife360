@@ -1,5 +1,5 @@
 """
-<plugin key="Life360" name="Life 360 Presence" author="febalci" version="1.0.3">
+<plugin key="Life360" name="Life 360 Presence" author="febalci" version="1.0.4">
     <params>
         <param field="Username" label="Life360 Username" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
@@ -66,9 +66,9 @@ class BasePlugin:
         if (len(Devices) == 0):
             for member in range (self.membercount):
                 self.deviceFirstName.append(circle['members'][member]['firstName'])
-                Domoticz.Device(Name=self.deviceFirstName[member]+' Presence', Unit=(member*self.membercount)+1, TypeName="Switch", Image=iconPID, Used=1).Create()
-                Domoticz.Device(Name=self.deviceFirstName[member]+' Location', Unit=(member*self.membercount)+2, TypeName="Text", Used=0).Create()
-                Domoticz.Device(Name=self.deviceFirstName[member]+' Battery',Unit=(member*self.membercount)+3, TypeName="Percentage", Used=1).Create()
+                Domoticz.Device(Name=self.deviceFirstName[member]+' Presence', Unit=(member*3)+1, TypeName="Switch", Image=iconPID, Used=1).Create()
+                Domoticz.Device(Name=self.deviceFirstName[member]+' Location', Unit=(member*3)+2, TypeName="Text", Used=0).Create()
+                Domoticz.Device(Name=self.deviceFirstName[member]+' Battery',Unit=(member*3)+3, TypeName="Percentage", Used=1).Create()
             Domoticz.Debug(str(self.deviceFirstName))
             with open(Parameters["HomeFolder"]+"deviceorder.txt","w") as f:
                 json.dump(self.deviceFirstName,f)
@@ -131,11 +131,11 @@ class BasePlugin:
                 foundDeviceIdx = self.deviceFirstName.index(circle['members'][member]['firstName'])
                 Domoticz.Debug('Foundidx='+str(foundDeviceIdx)+','+circle['members'][member]['firstName'])
                 if circle['members'][member]['location']['name'] == 'Home':
-                    UpdateDevice((foundDeviceIdx*self.membercount)+1,1,'On')
-                    Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*self.membercount)+1)+','+circle['members'][member]['firstName'])
+                    UpdateDevice((foundDeviceIdx*3)+1,1,'On')
+                    Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+1)+','+circle['members'][member]['firstName'])
                 else:
-                    UpdateDevice((foundDeviceIdx*self.membercount)+1,0,'Off')
-                    Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*self.membercount)+1)+','+circle['members'][member]['firstName'])
+                    UpdateDevice((foundDeviceIdx*3)+1,0,'Off')
+                    Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+1)+','+circle['members'][member]['firstName'])
                     
                 if circle['members'][member]['location']['name'] == None:
                     if self.googleapikey != 'Empty':
@@ -145,11 +145,11 @@ class BasePlugin:
                         currentloc = 'None'
                 else:
                     currentloc = circle['members'][member]['location']['name']
-                UpdateDevice((foundDeviceIdx*self.membercount)+2,1,currentloc)
-                Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*self.membercount)+2)+','+circle['members'][member]['firstName'])
+                UpdateDevice((foundDeviceIdx*3)+2,1,currentloc)
+                Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+2)+','+circle['members'][member]['firstName'])
  
-                UpdateDevice((foundDeviceIdx*self.membercount)+3,int(float(circle['members'][member]['location']['battery'])),circle['members'][member]['location']['battery'])
-                Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*self.membercount)+3)+','+circle['members'][member]['firstName'])
+                UpdateDevice((foundDeviceIdx*3)+3,int(float(circle['members'][member]['location']['battery'])),circle['members'][member]['location']['battery'])
+                Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+3)+','+circle['members'][member]['firstName'])
             self.pollCount = 0 #Reset Pollcount
         else:
             self.pollCount = self.pollCount + 1
