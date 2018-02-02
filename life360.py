@@ -1,5 +1,7 @@
 #!/usr/bin/env python
+import Domoticz
 import urllib.request, urllib.parse
+from urllib.error import URLError, HTTPError
 import json
 
 class life360:
@@ -23,11 +25,20 @@ class life360:
         
         if method == 'GET':
             request = urllib.request.Request(url, headers=headers)
-            r = urllib.request.urlopen(request)
         elif method == 'POST':
             request = urllib.request.Request(url, data=(urllib.parse.urlencode(params)).encode('utf-8'), headers=headers)
+
+        try:
             r = urllib.request.urlopen(request)
-        jsonr = json.loads(r.read().decode('utf-8'))
+        except HTTPError as e:
+            Domoticz.Log('Life360 HTTPError code: '+ str(e.code))
+            jsonr = 'Error'
+        except URLError as e:
+            Domoticz.Log('Life360 URLError Reason: '+ str(e.reason))
+            jsonr = 'Error'
+        else:
+            jsonr = json.loads(r.read().decode('utf-8'))
+
         return jsonr
 
     def authenticate(self):
@@ -38,21 +49,30 @@ class life360:
             'password': self.password
         }
         r = self.make_request(url=url, params=params, method='POST', authheader="Basic " + self.authorization_token)
-        try:
+        if r!= 'Error':        
             self.access_token = r['access_token']
+            Domoticz.Debug('Token Received: '+self.access_token)
             return True
-        except:
-            return False
+        else:
+                Domoticz.Log('No Token Received; Please Check Life360 Username and Password')
+                Domoticz.Debug('You can Validate Your Credentials in www.life360.com')
+                return False            
 
     def get_circles(self):
         url = self.base_url + self.circles_url
         authheader="bearer " + self.access_token
         r = self.make_request(url=url, method='GET', authheader=authheader)
-        return r['circles']
+        if r!='Error':
+            return r['circles']
+        else:
+            return 'Error'
 
     def get_circle(self, circle_id):
         url = self.base_url + self.circle_url + circle_id
         authheader="bearer " + self.access_token
         r = self.make_request(url=url, method='GET', authheader=authheader)
-        return r
+        if r!='Error':
+            return r
+        else:
+            return 'Error'
 

@@ -1,5 +1,5 @@
 """
-<plugin key="Life360" name="Life 360 Presence" author="febalci" version="1.0.4">
+<plugin key="Life360" name="Life 360 Presence" author="febalci" version="1.0.5">
     <params>
         <param field="Username" label="Life360 Username" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
@@ -60,29 +60,32 @@ class BasePlugin:
             Domoticz.Debug("Family Circle:"+str(circle))
             self.membercount = int(circle['memberCount'])
             Domoticz.Debug('Member Count = '+str(self.membercount))
-        else:
-            Domoticz.Log("Error authenticating...")
 
-        if (len(Devices) == 0):
-            for member in range (self.membercount):
-                self.deviceFirstName.append(circle['members'][member]['firstName'])
-                Domoticz.Device(Name=self.deviceFirstName[member]+' Presence', Unit=(member*3)+1, TypeName="Switch", Image=iconPID, Used=1).Create()
-                Domoticz.Device(Name=self.deviceFirstName[member]+' Location', Unit=(member*3)+2, TypeName="Text", Used=0).Create()
-                Domoticz.Device(Name=self.deviceFirstName[member]+' Battery',Unit=(member*3)+3, TypeName="Percentage", Used=1).Create()
-            Domoticz.Debug(str(self.deviceFirstName))
-            with open(Parameters["HomeFolder"]+"deviceorder.txt","w") as f:
-                json.dump(self.deviceFirstName,f)
-        else:
-            with open(Parameters["HomeFolder"]+"deviceorder.txt") as f: self.deviceFirstName = json.load(f)
-            Domoticz.Debug(str(self.deviceFirstName))
+            if (len(Devices) == 0):
+                for member in range (self.membercount):
+                    self.deviceFirstName.append(circle['members'][member]['firstName'])
+                    Domoticz.Device(Name=self.deviceFirstName[member]+' Presence', Unit=(member*3)+1, TypeName="Switch", Image=iconPID, Used=1).Create()
+                    Domoticz.Device(Name=self.deviceFirstName[member]+' Location', Unit=(member*3)+2, TypeName="Text", Used=0).Create()
+                    Domoticz.Device(Name=self.deviceFirstName[member]+' Battery',Unit=(member*3)+3, TypeName="Percentage", Used=1).Create()
+                Domoticz.Debug(str(self.deviceFirstName))
+                with open(Parameters["HomeFolder"]+"deviceorder.txt","w") as f:
+                    json.dump(self.deviceFirstName,f)
+            else:
+                with open(Parameters["HomeFolder"]+"deviceorder.txt") as f: self.deviceFirstName = json.load(f)
+                Domoticz.Debug(str(self.deviceFirstName))
 
-        Domoticz.Debug("Devices created.")
-        DumpConfigToLog()
+            Domoticz.Debug("Devices created.")
+            DumpConfigToLog()
+        else:
+            Domoticz.Log('Error Authenticating Life360 or Connection Problem...')
+            Domoticz.Log('Please Use Correct Credentials and Restart The Plugin!')
+
 
         if (Parameters["Mode3"] == ""):
             self.googleapikey = 'Empty'
         else:
             self.googleapikey = Parameters["Mode3"]
+
         self.pollPeriod = 6 * int(Parameters["Mode2"])
         self.pollCount = self.pollPeriod - 1
         Domoticz.Heartbeat(10)
@@ -123,33 +126,35 @@ class BasePlugin:
                 #Let's get your circle!
                 circle = api.get_circle(self.id)
                 Domoticz.Debug("Family Circle:"+str(circle))
-            else:
-                Domoticz.Log("Error authenticating...")
-
-            for member in range (self.membercount):
-                Domoticz.Debug(str(member)+'/'+str(self.membercount))
-                foundDeviceIdx = self.deviceFirstName.index(circle['members'][member]['firstName'])
-                Domoticz.Debug('Foundidx='+str(foundDeviceIdx)+','+circle['members'][member]['firstName'])
-                if circle['members'][member]['location']['name'] == 'Home':
-                    UpdateDevice((foundDeviceIdx*3)+1,1,'On')
-                    Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+1)+','+circle['members'][member]['firstName'])
-                else:
-                    UpdateDevice((foundDeviceIdx*3)+1,0,'Off')
-                    Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+1)+','+circle['members'][member]['firstName'])
-                    
-                if circle['members'][member]['location']['name'] == None:
-                    if self.googleapikey != 'Empty':
-                        a = googlemapsapi()
-                        currentloc = a.getaddress(self.googleapikey,circle['members'][member]['location']['latitude'],circle['members'][member]['location']['longitude'])
+                for member in range (self.membercount):
+                    Domoticz.Debug(str(member)+'/'+str(self.membercount))
+                    foundDeviceIdx = self.deviceFirstName.index(circle['members'][member]['firstName'])
+                    Domoticz.Debug('Foundidx='+str(foundDeviceIdx)+','+circle['members'][member]['firstName'])
+                    if circle['members'][member]['location']['name'] == 'Home':
+                        UpdateDevice((foundDeviceIdx*3)+1,1,'On')
+                        Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+1)+','+circle['members'][member]['firstName'])
                     else:
-                        currentloc = 'None'
-                else:
-                    currentloc = circle['members'][member]['location']['name']
-                UpdateDevice((foundDeviceIdx*3)+2,1,currentloc)
-                Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+2)+','+circle['members'][member]['firstName'])
+                        UpdateDevice((foundDeviceIdx*3)+1,0,'Off')
+                        Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+1)+','+circle['members'][member]['firstName'])
+                    
+                    if circle['members'][member]['location']['name'] == None:
+                        if self.googleapikey != 'Empty':
+                            a = googlemapsapi()
+                            currentloc = a.getaddress(self.googleapikey,circle['members'][member]['location']['latitude'],circle['members'][member]['location']['longitude'])
+                        else:
+                            currentloc = 'None'
+                    else:
+                        currentloc = circle['members'][member]['location']['name']
+                    UpdateDevice((foundDeviceIdx*3)+2,1,currentloc)
+                    Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+2)+','+circle['members'][member]['firstName'])
  
-                UpdateDevice((foundDeviceIdx*3)+3,int(float(circle['members'][member]['location']['battery'])),circle['members'][member]['location']['battery'])
-                Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+3)+','+circle['members'][member]['firstName'])
+                    UpdateDevice((foundDeviceIdx*3)+3,int(float(circle['members'][member]['location']['battery'])),circle['members'][member]['location']['battery'])
+                    Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+3)+','+circle['members'][member]['firstName'])
+
+            else:
+                Domoticz.Log("Error Authenticating Life360 or Connection Problem...")
+                Domoticz.Log('Please Use Correct Credentials and Restart The Plugin!!!')
+
             self.pollCount = 0 #Reset Pollcount
         else:
             self.pollCount = self.pollCount + 1
