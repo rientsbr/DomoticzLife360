@@ -3,7 +3,7 @@
 
 This is a Domoticz Plugin for Life 360
 
-You get 3 device types: At Home Presence, Location and Driving Distance in Minutes
+You get 4 device types: At Home Presence, Battery, Location and Driving Distance in Minutes
 
 ![alt text](https://www.dropbox.com/s/8jqwuq0big73da3/Life360Devices.jpg?raw=1)
 
@@ -17,7 +17,7 @@ The icons are downloaded from "Free Vector Graphics by www.Vecteezy.com"
 
 ## Installation:
 Create a new Life360 "folder" under Domoticz plugins directory. Copy all the files here to the new Life360 folder.
-Restart Domoticz, under Hardware page, select "Life360 Presence" as a new hardware and fill in the required fields. "Google maps API key is not required, but if you want to get current address of a member, you should get a Google maps API key and copy-paste here, otherwise leave it empty.
+Restart Domoticz, under Hardware page, select "Life360 Presence" as a new hardware and fill in the required fields. "Google maps API key is not required, but if you want to get current address of a member and driving distance, you should get a Google maps API key and copy-paste here, otherwise leave it empty.
 
 ## How to get a Google Maps API Key:
 Go to https://developers.google.com/maps/documentation/javascript/get-api-key page. Press "Get A Key" Button and follow the directives.
