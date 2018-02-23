@@ -1,7 +1,7 @@
 """
-<plugin key="Life360" name="Life 360 Presence" author="febalci" version="1.0.5">
+<plugin key="Life360" name="Life 360 Presence" author="febalci" version="1.1.0">
     <params>
-        <param field="Username" label="Life360 Username" width="150px" required="true" default="username"/>
+        <param field="Username" label="Life360 Email Address" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
         <param field="Mode2" label="Poll Period (min)" width="75px" required="true" default="2"/>
         <param field="Mode3" label="Google Maps API Key" width="300px" required="false"/>        
@@ -22,17 +22,31 @@ from googlemapsapi import googlemapsapi
 
 import json
 
+#v1.1.0:
+#Removed Battery Device and redirect Battery Levels to Domoticz Device BatteryLevel (Can see in Settings-Devices)
+#Added Distance Device in Duration (Driving only in minutes)
+#Changed Location  Device to Used=1 default
+#Changed 'Life360 Username' to 'Life360 Email Address'
+#Tidied up the code a bit
+#Added Check circles to heartbeat; When the internet is down on onStart, plugin fails to get information until a restart 
+
 class BasePlugin:
 
     def __init__(self):
         self.authorization_token = "cFJFcXVnYWJSZXRyZTRFc3RldGhlcnVmcmVQdW1hbUV4dWNyRUh1YzptM2ZydXBSZXRSZXN3ZXJFQ2hBUHJFOTZxYWtFZHI0Vg=="
         self.deviceFirstName = []
         self.membercount = 0
-        self.circles = ''
         self.id = ''
         self.pollPeriod = 0
         self.pollCount = 0
         self.googleapikey = ''
+        self.myHomelat = 0
+        self.myHomelon = 0
+        self.circleFirstName = ''
+        self.circleBattery = 0
+        self.circleLatitude = 0
+        self.circleLongitude = 0
+        self.circlLocationName = ''
         return
 
     def onStart(self):
@@ -46,14 +60,27 @@ class BasePlugin:
             Domoticz.Image('Life360Presenceicon.zip').Create()
         iconPID = Images["Life360Presence"].ID
 
+        # Get the location from the Settings
+        if not "Location" in Settings:
+            Domoticz.Log("Location not set in Preferences")
+            return False
+        
+        # The location is stored in a string in the Settings
+        loc = Settings["Location"].split(";")
+        self.myHomelat = float(loc[0])
+        self.myHomelon = float(loc[1])
+        Domoticz.Debug("Coordinates from Domoticz: " + str(self.myHomelat) + ";" + str(self.myHomelon))
+
+        if self.myHomelat == None or self.myHomelon == None:
+            Domoticz.Log("Unable to parse coordinates")
+            return False
+ 
         api = life360(authorization_token=self.authorization_token, username=Parameters["Username"], password=Parameters["Password"])
         if api.authenticate():
             Domoticz.Debug("API Authenticated")
-            #Grab some circles returns json
-            self.circles =  api.get_circles()
-            Domoticz.Debug("Circles:"+str(self.circles))        
-            #grab id
-            self.id = self.circles[0]['id']
+        
+            #Grab id
+            self.id = api.get_circle_id()
             Domoticz.Debug("Circle 0 ID:"+str(self.id))
             #Let's get your circle!
             circle = api.get_circle(self.id)
@@ -64,9 +91,10 @@ class BasePlugin:
             if (len(Devices) == 0):
                 for member in range (self.membercount):
                     self.deviceFirstName.append(circle['members'][member]['firstName'])
-                    Domoticz.Device(Name=self.deviceFirstName[member]+' Presence', Unit=(member*3)+1, TypeName="Switch", Image=iconPID, Used=1).Create()
-                    Domoticz.Device(Name=self.deviceFirstName[member]+' Location', Unit=(member*3)+2, TypeName="Text", Used=0).Create()
-                    Domoticz.Device(Name=self.deviceFirstName[member]+' Battery',Unit=(member*3)+3, TypeName="Percentage", Used=1).Create()
+                    Domoticz.Device(Name=self.deviceFirstName[member]+' Presence', Unit=(member*4)+1, TypeName="Switch", Image=iconPID, Used=1).Create()
+                    Domoticz.Device(Name=self.deviceFirstName[member]+' Location', Unit=(member*4)+2, TypeName="Text", Used=1).Create()
+                    Domoticz.Device(Name=self.deviceFirstName[member]+' Battery',Unit=(member*4)+3, TypeName="Percentage", Used=1).Create()
+                    Domoticz.Device(Name=self.deviceFirstName[member]+' Distance',Unit=(member*4)+4, TypeName="Custom", Options={"Custom": "1;mins"}, Used=1).Create()
                 Domoticz.Debug(str(self.deviceFirstName))
                 with open(Parameters["HomeFolder"]+"deviceorder.txt","w") as f:
                     json.dump(self.deviceFirstName,f)
@@ -123,34 +151,48 @@ class BasePlugin:
             Domoticz.Log("Checking Circle...")
             api = life360(authorization_token=self.authorization_token, username=Parameters["Username"], password=Parameters["Password"])
             if api.authenticate():
+                self.id = api.get_circle_id()
                 #Let's get your circle!
                 circle = api.get_circle(self.id)
+
                 Domoticz.Debug("Family Circle:"+str(circle))
                 for member in range (self.membercount):
                     Domoticz.Debug(str(member)+'/'+str(self.membercount))
-                    foundDeviceIdx = self.deviceFirstName.index(circle['members'][member]['firstName'])
-                    Domoticz.Debug('Foundidx='+str(foundDeviceIdx)+','+circle['members'][member]['firstName'])
-                    if circle['members'][member]['location']['name'] == 'Home':
-                        UpdateDevice((foundDeviceIdx*3)+1,1,'On')
-                        Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+1)+','+circle['members'][member]['firstName'])
+                    #Assign Variables
+                    self.circleFirstName = circle['members'][member]['firstName']
+                    self.circleBattery = circle['members'][member]['location']['battery']
+                    self.circleLatitude = circle['members'][member]['location']['latitude']
+                    self.circleLongitude = circle['members'][member]['location']['longitude']
+                    self.circlLocationName = circle['members'][member]['location']['name']
+
+                    foundDeviceIdx = self.deviceFirstName.index(self.circleFirstName)
+                    Domoticz.Debug('Foundidx='+str(foundDeviceIdx)+','+self.circleFirstName)
+                    if self.circlLocationName == 'Home':
+                        UpdateDevice((foundDeviceIdx*4)+1,1,'On')
+                        Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+1)+','+self.circleFirstName)
                     else:
-                        UpdateDevice((foundDeviceIdx*3)+1,0,'Off')
-                        Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+1)+','+circle['members'][member]['firstName'])
+                        UpdateDevice((foundDeviceIdx*4)+1,0,'Off')
+                        Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+1)+','+self.circleFirstName)
                     
-                    if circle['members'][member]['location']['name'] == None:
+                    a = googlemapsapi()
+                    
+                    if self.circlLocationName == None:
                         if self.googleapikey != 'Empty':
-                            a = googlemapsapi()
-                            currentloc = a.getaddress(self.googleapikey,circle['members'][member]['location']['latitude'],circle['members'][member]['location']['longitude'])
+                            currentloc = a.getaddress(self.googleapikey,self.circleLatitude,self.circleLongitude)
                         else:
                             currentloc = 'None'
                     else:
-                        currentloc = circle['members'][member]['location']['name']
-                    UpdateDevice((foundDeviceIdx*3)+2,1,currentloc)
-                    Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+2)+','+circle['members'][member]['firstName'])
- 
-                    UpdateDevice((foundDeviceIdx*3)+3,int(float(circle['members'][member]['location']['battery'])),circle['members'][member]['location']['battery'])
-                    Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*3)+3)+','+circle['members'][member]['firstName'])
+                        currentloc = self.circlLocationName
+                    UpdateDevice((foundDeviceIdx*4)+2,1,currentloc)
+                    Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+2)+','+self.circleFirstName)
 
+                    UpdateDevice((foundDeviceIdx*4)+3,int(float(self.circleBattery)),str(int(float(self.circleBattery))))
+                    Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+3)+','+circle['members'][member]['firstName'])
+
+                    currentmin = a.getdistance(self.googleapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
+                    UpdateDevice((foundDeviceIdx*4)+4,currentmin//60,str(currentmin//60))
+                    Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+4)+','+self.circleFirstName)
+                    
             else:
                 Domoticz.Log("Error Authenticating Life360 or Connection Problem...")
                 Domoticz.Log('Please Use Correct Credentials and Restart The Plugin!!!')
@@ -199,8 +241,8 @@ def UpdateDevice(Unit, nValue, sValue):
     # Make sure that the Domoticz device still exists (they can be deleted) before updating it 
     if (Unit in Devices):
         if (Devices[Unit].nValue != nValue) or (Devices[Unit].sValue != sValue):
-            Devices[Unit].Update(nValue, str(sValue))
-            Domoticz.Log("Update "+str(nValue)+":'"+str(sValue)+"' ("+Devices[Unit].Name+")")
+            Devices[Unit].Update(nValue=nValue, sValue=str(sValue))
+            Domoticz.Debug("Update "+str(nValue)+":'"+str(sValue)+"' ("+Devices[Unit].Name+")")
     return
 
 

@@ -58,12 +58,12 @@ class life360:
                 Domoticz.Debug('You can Validate Your Credentials in www.life360.com')
                 return False            
 
-    def get_circles(self):
+    def get_circle_id(self):
         url = self.base_url + self.circles_url
         authheader="bearer " + self.access_token
         r = self.make_request(url=url, method='GET', authheader=authheader)
         if r!='Error':
-            return r['circles']
+            return r['circles'][0]['id']
         else:
             return 'Error'
 

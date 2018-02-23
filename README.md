@@ -1,9 +1,9 @@
 # DomoticzLife360
-### * If updating from earlier versions of 1.0.3 to latest 1.0.3, please delete the old plugin from Domoticz Hardware and readd the 1.0.3. Required to create the device order txt file in order to handle Issue #5.
+### * If updating from earlier versions of 1.1.0, please delete all Life360 devices from Domoticz-Settings-Devices. Restarting the plugin with the new 1.1.0 will recreate the devices. Required to create new device and remove battery device to incorporate request issue #6 Distance in minutes. 
 
 This is a Domoticz Plugin for Life 360
 
-You get 3 device types: At Home Presence, Location and Battery Percentage
+You get 3 device types: At Home Presence, Location and Driving Distance in Minutes
 
 ![alt text](https://www.dropbox.com/s/8jqwuq0big73da3/Life360Devices.jpg?raw=1)
 
@@ -16,7 +16,7 @@ Thanks to Harper Reed for Python implementation of Life 360 API: https://github.
 The icons are downloaded from "Free Vector Graphics by www.Vecteezy.com"
 
 ## Installation:
-Create a new life360 "folder" under Domoticz plugins directory. Copy all the files here to the new life360 folder.
+Create a new Life360 "folder" under Domoticz plugins directory. Copy all the files here to the new Life360 folder.
 Restart Domoticz, under Hardware page, select "Life360 Presence" as a new hardware and fill in the required fields. "Google maps API key is not required, but if you want to get current address of a member, you should get a Google maps API key and copy-paste here, otherwise leave it empty.
 
 ## How to get a Google Maps API Key:
