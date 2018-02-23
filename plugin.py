@@ -179,18 +179,21 @@ class BasePlugin:
                     if self.circlLocationName == None:
                         if self.googleapikey != 'Empty':
                             currentloc = a.getaddress(self.googleapikey,self.circleLatitude,self.circleLongitude)
+                            currentmin = a.getdistance(self.googleapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
+
                         else:
                             currentloc = 'None'
+                            currentmin = 0
                     else:
                         currentloc = self.circlLocationName
+                        currentmin = 0
                     UpdateDevice((foundDeviceIdx*4)+2,1,currentloc)
                     Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+2)+','+self.circleFirstName)
 
                     UpdateDevice((foundDeviceIdx*4)+3,int(float(self.circleBattery)),str(int(float(self.circleBattery))))
                     Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+3)+','+circle['members'][member]['firstName'])
 
-                    currentmin = a.getdistance(self.googleapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
-                    UpdateDevice((foundDeviceIdx*4)+4,currentmin//60,str(currentmin//60))
+                    UpdateDevice((foundDeviceIdx*4)+4,int(currentmin//60),str(int(currentmin//60)))
                     Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+4)+','+self.circleFirstName)
                     
             else:
