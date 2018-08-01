@@ -1,4 +1,5 @@
 # DomoticzLife360
+### *** Please NOte that due to the new pricing scheme of Google Maps API, this plugin has some memory and error issues. Have to find another service provider for traffic data...
 ### * If updating from earlier versions of 1.1.0, please delete all Life360 devices from Domoticz-Settings-Devices. Restarting the plugin with the new 1.1.0 will recreate the devices. Required to create new device and remove battery device to incorporate request issue #6 Distance in minutes. 
 
 This is a Domoticz Plugin for Life 360
