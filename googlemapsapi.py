@@ -4,6 +4,9 @@ import urllib.request, urllib.parse
 from urllib.error import URLError, HTTPError
 import json
 
+#18.09.2018
+#Check distance status added
+
 class googlemapsapi:
     rgeocodeaddr = "https://maps.googleapis.com/maps/api/geocode/json?latlng="
     trafficaddr = "https://maps.googleapis.com/maps/api/directions/json?origin=%s&destination=%s&transit_mode=driving&departure_time=now&key=%s"
@@ -30,9 +33,15 @@ class googlemapsapi:
             if type == 0:
                 jsonr = jsonj['results'][0]['formatted_address']
             elif type == 1:
-                jsonr = jsonj["routes"][0]["legs"][0]["duration_in_traffic"]["value"]
+                retstatus = jsonj["status"]
+                if str(retstatus)=="OK":
+                    jsonr = jsonj["routes"][0]["legs"][0]["duration_in_traffic"]["value"]
+                    jsons = jsonj["routes"][0]["legs"][0]["start_address"]
+                elif str(retstatus)=="ZERO_RESULTS":
+                    jsonr = 0
+                    jsons = ""
                 Domoticz.Debug('Seconds:'+str(jsonr))
-        return jsonr
+        return retstatus,jsonr,jsons
 
     def getaddress(self,apikey,lat,lon):
         url=self.rgeocodeaddr+str(lat)+','+str(lon)+'&key='+str(apikey)
@@ -46,9 +55,5 @@ class googlemapsapi:
     def getdistance(self,apikey,lat1,lon1,lat2,lon2):
         url = self.trafficaddr % (str(lat1)+','+str(lon1),str(lat2)+','+str(lon2),apikey)
         Domoticz.Debug('URL:'+url)
-        req = self.make_request(type=1,url=url)
-        r = req
-        if r!='Error':
-            return r
-        else:
-            return 'Error'
+        stat, dist, address = self.make_request(type=1,url=url)
+        return stat,dist,address

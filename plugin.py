@@ -1,5 +1,5 @@
 """
-<plugin key="Life360" name="Life 360 Presence" author="febalci" version="1.1.0">
+<plugin key="Life360" name="Life 360 Presence" author="febalci" version="2.0.0">
     <params>
         <param field="Username" label="Life360 Email Address" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
@@ -21,6 +21,12 @@ from life360 import life360
 from googlemapsapi import googlemapsapi
 
 import json
+
+#v2.0.0
+#Fixed:If the target is unreachable (Other side of ocean-@heggink) the distance is now 0 in order to prevent memory problems
+#New:Removed get_circle_id from onheartbeat since it is a constant (@heggink) to reduce life360 api calls
+#Fixed: If the addess is defined as a name other than 'Home' (Like School) in life360, distance was showing as 0 km. 
+#New: Reduced Google Maps API calls by incorporating address to getdistance function. getaddress is only called if getdistance returns None address.
 
 #v1.1.0:
 #Removed Battery Device and redirect Battery Levels to Domoticz Device BatteryLevel (Can see in Settings-Devices)
@@ -151,7 +157,7 @@ class BasePlugin:
             Domoticz.Log("Checking Circle...")
             api = life360(authorization_token=self.authorization_token, username=Parameters["Username"], password=Parameters["Password"])
             if api.authenticate():
-                self.id = api.get_circle_id()
+                #self.id = api.get_circle_id()  //Removed v2.0.0
                 #Let's get your circle!
                 circle = api.get_circle(self.id)
 
@@ -178,15 +184,22 @@ class BasePlugin:
                     
                     if self.circlLocationName == None:
                         if self.googleapikey != 'Empty':
-                            currentloc = a.getaddress(self.googleapikey,self.circleLatitude,self.circleLongitude)
-                            currentmin = a.getdistance(self.googleapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
-
+                            currentstat, currentmin, currentloc = a.getdistance(self.googleapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
+                            if currentloc == '':
+                                currentloc = a.getaddress(self.googleapikey,self.circleLatitude,self.circleLongitude)
                         else:
                             currentloc = 'None'
                             currentmin = 0
                     else:
                         currentloc = self.circlLocationName
-                        currentmin = 0
+                        if self.circlLocationName == 'Home':
+                            currentmin = 0
+                        else:
+                            if self.googleapikey != 'Empty':
+                                stat, currentmin, currentloc2 = a.getdistance(self.googleapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
+                            else:
+                                currentmin = 0
+
                     UpdateDevice((foundDeviceIdx*4)+2,1,currentloc)
                     Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+2)+','+self.circleFirstName)
 
