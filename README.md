@@ -1,6 +1,10 @@
 # DomoticzLife360
-### *** Please Note that due to the new pricing scheme of Google Maps API, this plugin has some memory and error issues. Have to find another service provider for traffic data...
-### * If updating from earlier versions of 1.1.0, please delete all Life360 devices from Domoticz-Settings-Devices. Restarting the plugin with the new 1.1.0 will recreate the devices. Required to create new device and remove battery device to incorporate request issue #6 Distance in minutes. 
+### v2.0.0
+#### Fixed:If the target is unreachable (Other side of ocean-@heggink) the distance is now 0 in order to prevent memory problems
+#### New:Removed get_circle_id from onheartbeat since it is a constant (@heggink) to reduce life360 api calls
+#### Fixed: If the addess is defined as a name other than 'Home' (Like School) in life360, distance was showing as 0 km. 
+#### New: Reduced Google Maps API calls by incorporating address to getdistance function. getaddress is only called if getdistance returns None address.
+
 
 This is a Domoticz Plugin for Life 360
 
