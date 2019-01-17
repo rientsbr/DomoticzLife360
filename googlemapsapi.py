@@ -23,15 +23,18 @@ class googlemapsapi:
         try:
             r = urllib.request.urlopen(request)
         except HTTPError as e:
-            Domoticz.Log('Life360 HTTPError Code: '+ str(e.code))
+            Domoticz.Log('GMAPI HTTPError Code: '+ str(e.code))
             jsonr='Error'
         except URLError as e:
-            Domoticz.Log('Google API URLError Reason: '+ str(e.reason))
+            Domoticz.Log('GMAPI URLError Reason: '+ str(e.reason))
             jsonr='Error'
         else:
             jsonj = json.loads(r.read().decode('utf-8'))
             if type == 0:
                 jsonr = jsonj['results'][0]['formatted_address']
+                retstatus = 'OK'
+                jsons = ''
+
             elif type == 1:
                 retstatus = jsonj["status"]
                 if str(retstatus)=="OK":
@@ -45,7 +48,7 @@ class googlemapsapi:
 
     def getaddress(self,apikey,lat,lon):
         url=self.rgeocodeaddr+str(lat)+','+str(lon)+'&key='+str(apikey)
-        req = self.make_request(type=0,url=url)
+        stat, req , tempaddr= self.make_request(type=0,url=url)
         r = req
         if r!='Error':
             return r

@@ -1,10 +1,16 @@
 """
-<plugin key="Life360" name="Life 360 Presence" author="febalci" version="2.0.0">
+<plugin key="Life360" name="Life 360 Presence" author="febalci" version="2.1.0">
     <params>
         <param field="Username" label="Life360 Email Address" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
         <param field="Mode2" label="Poll Period (min)" width="75px" required="true" default="2"/>
-        <param field="Mode3" label="Google Maps API Key" width="300px" required="false"/>        
+        <param field="Mode4" label="Choose Map provider" width="300px">
+            <options>
+                <option label="Google Maps" value="GM"/>
+                <option label="Open Streetmap" value="OSM" default="true" />
+            </options>
+        </param>
+        <param field="Mode3" label="Google Maps API Key" width="300px" required="false"/>
         <param field="Mode6" label="Debug" width="75px">
             <options>
                 <option label="True" value="Debug"/>
@@ -16,11 +22,16 @@
 """
 import Domoticz
 import datetime
+import time
 
 from life360 import life360
 from googlemapsapi import googlemapsapi
+from osmapi import osmapi
 
 import json
+
+#2.1.0
+#New:OpenStreet Maps Selection; thanks to Emile Spaanbroek...
 
 #v2.0.0
 #Fixed:If the target is unreachable (Other side of ocean-@heggink) the distance is now 0 in order to prevent memory problems
@@ -53,6 +64,7 @@ class BasePlugin:
         self.circleLatitude = 0
         self.circleLongitude = 0
         self.circlLocationName = ''
+        self.selectedMap = ''
         return
 
     def onStart(self):
@@ -114,7 +126,11 @@ class BasePlugin:
             Domoticz.Log('Error Authenticating Life360 or Connection Problem...')
             Domoticz.Log('Please Use Correct Credentials and Restart The Plugin!')
 
-
+        if (Parameters["Mode4"] == "OSM"):
+            self.selectedMap = "OSM"
+        else:
+            self.selectedMap = "GM"
+		
         if (Parameters["Mode3"] == ""):
             self.googleapikey = 'Empty'
         else:
@@ -179,26 +195,40 @@ class BasePlugin:
                     else:
                         UpdateDevice((foundDeviceIdx*4)+1,0,'Off')
                         Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+1)+','+self.circleFirstName)
-                    
-                    a = googlemapsapi()
-                    
+
+                    if self.selectedMap == "GM":
+                        a = googlemapsapi()
+                    elif self.selectedMap == "OSM":
+                        a = osmapi()
+
                     if self.circlLocationName == None:
-                        if self.googleapikey != 'Empty':
-                            currentstat, currentmin, currentloc = a.getdistance(self.googleapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
-                            if currentloc == '':
-                                currentloc = a.getaddress(self.googleapikey,self.circleLatitude,self.circleLongitude)
-                        else:
-                            currentloc = 'None'
+                        if self.selectedMap == "GM":
+                            if self.googleapikey != 'Empty':
+                                currentstat, currentmin, currentloc = a.getdistance(self.googleapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
+                                if currentloc == '':
+                                    currentloc = a.getaddress(self.googleapikey,self.circleLatitude,self.circleLongitude)
+                            else:
+                                currentloc = 'None'
+                                currentmin = 0
+                        elif self.selectedMap == "OSM":
+                            currentloc = a.getaddress(self.circleLatitude,self.circleLongitude)
                             currentmin = 0
+                            # Get distance
+                            # currentstat, currentmin = a.getdistance(self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
+
                     else:
                         currentloc = self.circlLocationName
                         if self.circlLocationName == 'Home':
                             currentmin = 0
                         else:
-                            if self.googleapikey != 'Empty':
-                                stat, currentmin, currentloc2 = a.getdistance(self.googleapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
-                            else:
+                            if self.selectedMap == "GM":
+                                if self.googleapikey != 'Empty':
+                                    stat, currentmin, currentloc2 = a.getdistance(self.googleapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
+                                else:
+                                    currentmin = 0
+                            elif self.selectedMap == "OSM":
                                 currentmin = 0
+
 
                     UpdateDevice((foundDeviceIdx*4)+2,1,currentloc)
                     Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+2)+','+self.circleFirstName)
@@ -208,7 +238,9 @@ class BasePlugin:
 
                     UpdateDevice((foundDeviceIdx*4)+4,int(currentmin//60),str(int(currentmin//60)))
                     Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+4)+','+self.circleFirstName)
-                    
+
+                    if self.selectedMap == "OSM": # In respect of OSM's usage policy of 1 call per second
+                        time.sleep(1)
             else:
                 Domoticz.Log("Error Authenticating Life360 or Connection Problem...")
                 Domoticz.Log('Please Use Correct Credentials and Restart The Plugin!!!')
