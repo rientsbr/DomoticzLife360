@@ -1,10 +1,6 @@
 # DomoticzLife360
-### v2.0.0
-#### Fixed:If the target is unreachable (Other side of ocean-@heggink) the distance is now 0 in order to prevent memory problems
-#### New:Removed get_circle_id from onheartbeat since it is a constant (@heggink) to reduce life360 api calls
-#### Fixed: If the addess is defined as a name other than 'Home' (Like School) in life360, distance was showing as 0 km. 
-#### New: Reduced Google Maps API calls by incorporating address to getdistance function. getaddress is only called if getdistance returns None address.
-
+### v2.1.0
+#### New: Added OpenStreet Maps Selection; thanks to Emile Spaanbroek...
 
 This is a Domoticz Plugin for Life 360
 
