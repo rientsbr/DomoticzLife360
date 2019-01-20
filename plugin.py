@@ -1,16 +1,16 @@
 """
-<plugin key="Life360" name="Life 360 Presence" author="febalci" version="2.1.0">
+<plugin key="Life360" name="Life 360 Presence" author="febalci" version="2.2.0">
     <params>
         <param field="Username" label="Life360 Email Address" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
         <param field="Mode2" label="Poll Period (min)" width="75px" required="true" default="2"/>
         <param field="Mode4" label="Choose Map provider" width="300px">
             <options>
-                <option label="Google Maps" value="GM"/>
+                <option label="TomTom Maps" value="TM"/>
                 <option label="Open Streetmap" value="OSM" default="true" />
             </options>
         </param>
-        <param field="Mode3" label="Google Maps API Key" width="300px" required="false"/>
+        <param field="Mode3" label="TomTom API Key" width="300px" required="false"/>
         <param field="Mode6" label="Debug" width="75px">
             <options>
                 <option label="True" value="Debug"/>
@@ -25,13 +25,17 @@ import datetime
 import time
 
 from life360 import life360
-from googlemapsapi import googlemapsapi
+from tomtomapi import tomtomapi
 from osmapi import osmapi
 
 import json
 
+#2.2.0
+#New:Added TomTom Maps API Selection
+#Fixed: Removed Google Maps API
+
 #2.1.0
-#New:OpenStreet Maps Selection; thanks to Emile Spaanbroek...
+#New:OpenStreet Maps API Selection; thanks to Emile Spaanbroek...
 
 #v2.0.0
 #Fixed:If the target is unreachable (Other side of ocean-@heggink) the distance is now 0 in order to prevent memory problems
@@ -56,7 +60,7 @@ class BasePlugin:
         self.id = ''
         self.pollPeriod = 0
         self.pollCount = 0
-        self.googleapikey = ''
+        self.tomtomapikey = ''
         self.myHomelat = 0
         self.myHomelon = 0
         self.circleFirstName = ''
@@ -129,12 +133,12 @@ class BasePlugin:
         if (Parameters["Mode4"] == "OSM"):
             self.selectedMap = "OSM"
         else:
-            self.selectedMap = "GM"
+            self.selectedMap = "TM"
 		
         if (Parameters["Mode3"] == ""):
-            self.googleapikey = 'Empty'
+            self.tomtomapikey = 'Empty'
         else:
-            self.googleapikey = Parameters["Mode3"]
+            self.tomtomapikey = Parameters["Mode3"]
 
         self.pollPeriod = 6 * int(Parameters["Mode2"])
         self.pollCount = self.pollPeriod - 1
@@ -170,7 +174,7 @@ class BasePlugin:
     def onHeartbeat(self):
         Domoticz.Debug("onHeartBeat called:"+str(self.pollCount)+"/"+str(self.pollPeriod))
         if self.pollCount >= self.pollPeriod:
-            Domoticz.Log("Checking Circle...")
+            Domoticz.Log("Checking Life360 Circle...")
             api = life360(authorization_token=self.authorization_token, username=Parameters["Username"], password=Parameters["Password"])
             if api.authenticate():
                 #self.id = api.get_circle_id()  //Removed v2.0.0
@@ -196,22 +200,21 @@ class BasePlugin:
                         UpdateDevice((foundDeviceIdx*4)+1,0,'Off')
                         Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+1)+','+self.circleFirstName)
 
-                    if self.selectedMap == "GM":
-                        a = googlemapsapi()
+                    if self.selectedMap == "TM":
+                        a = tomtomapi()
                     elif self.selectedMap == "OSM":
                         a = osmapi()
 
                     if self.circlLocationName == None:
-                        if self.selectedMap == "GM":
-                            if self.googleapikey != 'Empty':
-                                currentstat, currentmin, currentloc = a.getdistance(self.googleapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
-                                if currentloc == '':
-                                    currentloc = a.getaddress(self.googleapikey,self.circleLatitude,self.circleLongitude)
+                        if self.selectedMap == "TM":
+                            if self.tomtomapikey != 'Empty':
+                                currentstat, currentmin = a.getdistance(self.tomtomapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
+                                currentstat2, currentloc = a.getaddress(self.tomtomapikey,self.circleLatitude,self.circleLongitude)
                             else:
-                                currentloc = 'None'
+                                currentloc = 'TomTom API Key not set!'
                                 currentmin = 0
                         elif self.selectedMap == "OSM":
-                            currentloc = a.getaddress(self.circleLatitude,self.circleLongitude)
+                            currentstat, currentloc = a.getaddress(self.circleLatitude,self.circleLongitude)
                             currentmin = 0
                             # Get distance
                             # currentstat, currentmin = a.getdistance(self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
@@ -220,11 +223,13 @@ class BasePlugin:
                         currentloc = self.circlLocationName
                         if self.circlLocationName == 'Home':
                             currentmin = 0
-                        else:
-                            if self.selectedMap == "GM":
-                                if self.googleapikey != 'Empty':
-                                    stat, currentmin, currentloc2 = a.getdistance(self.googleapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
+                        else: #Location known on Life360, but other than 'Home'
+                            if self.selectedMap == "TM":
+                                if self.tomtomapikey != 'Empty':
+                                    currentstat, currentmin = a.getdistance(self.tomtomapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
+                                    currentstat2, currentloc = a.getaddress(self.tomtomapikey,self.circleLatitude,self.circleLongitude)
                                 else:
+                                    currentloc = 'TomTom API Key not set!'
                                     currentmin = 0
                             elif self.selectedMap == "OSM":
                                 currentmin = 0
