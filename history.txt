@@ -1,0 +1,20 @@
+#2.2.0
+New:Added TomTom Maps API Selection
+Fixed: Removed Google Maps API
+
+#2.1.0
+New:OpenStreet Maps API Selection; thanks to Emile Spaanbroek...
+
+#v2.0.0
+Fixed:If the target is unreachable (Other side of ocean-@heggink) the distance is now 0 in order to prevent memory problems
+New:Removed get_circle_id from onheartbeat since it is a constant (@heggink) to reduce life360 api calls
+Fixed: If the addess is defined as a name other than 'Home' (Like School) in life360, distance was showing as 0 km. 
+New: Reduced Google Maps API calls by incorporating address to getdistance function. getaddress is only called if getdistance returns None address.
+
+#v1.1.0:
+Removed Battery Device and redirect Battery Levels to Domoticz Device BatteryLevel (Can see in Settings-Devices)
+Added Distance Device in Duration (Driving only in minutes)
+Changed Location  Device to Used=1 default
+Changed 'Life360 Username' to 'Life360 Email Address'
+Tidied up the code a bit
+Added Check circles to heartbeat; When the internet is down on onStart, plugin fails to get information until a restart 
