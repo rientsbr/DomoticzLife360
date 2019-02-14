@@ -1,7 +1,6 @@
 # DomoticzLife360
-### v2.2.0
-#### New: Added TomTom Maps API and removed Google Maps API. (TomTom API has 2.500 daily for free API calls limit)
-#### New: Added OpenStreet Maps Selection; thanks to Emile Spaanbroek...
+### v2.3.0
+#### New: Added locations.txt file to name your frequent locations instead of showing address
 
 This is a Domoticz Plugin for Life 360
 
