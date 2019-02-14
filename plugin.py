@@ -1,5 +1,5 @@
 """
-<plugin key="Life360" name="Life 360 Presence" author="febalci" version="2.2.0">
+<plugin key="Life360" name="Life 360 Presence" author="febalci" version="2.3.0">
     <params>
         <param field="Username" label="Life360 Email Address" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
@@ -24,6 +24,7 @@ import Domoticz
 import datetime
 import time
 
+from math import radians, cos, sin, asin, sqrt
 from life360 import life360
 from tomtomapi import tomtomapi
 from osmapi import osmapi
@@ -48,6 +49,7 @@ class BasePlugin:
         self.circleLongitude = 0
         self.circlLocationName = ''
         self.selectedMap = ''
+        self.locationNames = []
         return
 
     def onStart(self):
@@ -118,7 +120,14 @@ class BasePlugin:
             self.tomtomapikey = 'Empty'
         else:
             self.tomtomapikey = Parameters["Mode3"]
-
+        
+        try:
+            with open(Parameters["HomeFolder"]+"locations.txt") as f:
+                for line in f:
+                    self.locationNames.append(line.rstrip('\n').split(','))
+        except:
+            Domoticz.Log('No locations.txt file found')
+			
         self.pollPeriod = 6 * int(Parameters["Mode2"])
         self.pollCount = self.pollPeriod - 1
         Domoticz.Heartbeat(10)
@@ -185,16 +194,28 @@ class BasePlugin:
                         a = osmapi()
 
                     if self.circlLocationName == None:
+                        currentloc = None
                         if self.selectedMap == "TM":
                             if self.tomtomapikey != 'Empty':
                                 currentstat, currentmin = a.getdistance(self.tomtomapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
-                                currentstat2, currentloc = a.getaddress(self.tomtomapikey,self.circleLatitude,self.circleLongitude)
+                                for line in self.locationNames[1:]:
+                                    aa= haversine(float(self.circleLatitude),float(self.circleLongitude),float(line[1]),float(line[2]))
+                                    if int(aa)<=int(line[3]):
+                                        currentloc=line[0]
+                                if currentloc==None:
+                                    currentstat2, currentloc = a.getaddress(self.tomtomapikey,self.circleLatitude,self.circleLongitude)
                             else:
                                 currentloc = 'TomTom API Key not set!'
                                 currentmin = 0
+
                         elif self.selectedMap == "OSM":
                             currentstat, currentloc = a.getaddress(self.circleLatitude,self.circleLongitude)
                             currentmin = 0
+                            for line in self.locationNames[1:]:
+                                aa= haversine(float(self.circleLatitude),float(self.circleLongitude),float(line[1]),float(line[2]))
+                                if int(aa)<=int(line[3]):
+                                    currentloc=line[0]
+
                             # Get distance
                             # currentstat, currentmin = a.getdistance(self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
 
@@ -206,7 +227,6 @@ class BasePlugin:
                             if self.selectedMap == "TM":
                                 if self.tomtomapikey != 'Empty':
                                     currentstat, currentmin = a.getdistance(self.tomtomapikey,self.circleLatitude,self.circleLongitude,self.myHomelat,self.myHomelon)
-                                    currentstat2, currentloc = a.getaddress(self.tomtomapikey,self.circleLatitude,self.circleLongitude)
                                 else:
                                     currentloc = 'TomTom API Key not set!'
                                     currentmin = 0
@@ -269,6 +289,19 @@ def onHeartbeat():
     global _plugin
     _plugin.onHeartbeat()
 
+def haversine(lat1, lon1, lat2, lon2):
+
+    # convert decimal degrees to radians 
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+    # haversine formula 
+    dlon = lon2 - lon1 
+    dlat = lat2 - lat1 
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a)) 
+    r = 6371 # Radius of earth in kilometers. Use 3956 for miles
+    return c * r * 1000
+	
 def UpdateDevice(Unit, nValue, sValue):
     # Make sure that the Domoticz device still exists (they can be deleted) before updating it 
     if (Unit in Devices):
