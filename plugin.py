@@ -1,5 +1,5 @@
 """
-<plugin key="Life360" name="Life 360 Presence" author="febalci" version="2.3.0">
+<plugin key="Life360" name="Life 360 Presence" author="febalci" version="2.3.1">
     <params>
         <param field="Username" label="Life360 Email Address" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
@@ -238,9 +238,13 @@ class BasePlugin:
                     Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+2)+','+self.circleFirstName)
 
                     UpdateDevice((foundDeviceIdx*4)+3,int(float(self.circleBattery)),str(int(float(self.circleBattery))))
-                    Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+3)+','+circle['members'][member]['firstName'])
-
-                    UpdateDevice((foundDeviceIdx*4)+4,int(currentmin//60),str(int(currentmin//60)))
+                    Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+3)+','+self.circleFirstName)
+                    try:
+                        currentmin = str(int(currentmin//60))
+                    except:
+                        currentmin = "Error"
+                        
+                    UpdateDevice((foundDeviceIdx*4)+4,0,currentmin)
                     Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+4)+','+self.circleFirstName)
 
                     if self.selectedMap == "OSM": # In respect of OSM's usage policy of 1 call per second
