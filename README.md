@@ -1,5 +1,5 @@
 # DomoticzLife360
-### v2.3.0
+### v2.3.1
 #### New: Added locations.txt file to name your frequent locations instead of showing address
 
 This is a Domoticz Plugin for Life 360
