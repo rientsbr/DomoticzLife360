@@ -3,7 +3,7 @@
     <params>
         <param field="Username" label="Life360 Email Address" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
-        <param field="Mode1" label="Naam Thuis" width="150px" required="true" default="Home"/>
+        <param field="Mode1" label="Naam Thuis" width="150px">
         <param field="Mode2" label="Poll Period (min)" width="75px" required="true" default="2"/>
         <param field="Mode4" label="Choose Map provider" width="300px">
             <options>
