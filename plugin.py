@@ -54,7 +54,6 @@ class BasePlugin:
 
     def onStart(self):
         Domoticz.Log("onStart called")
-
         if (Parameters["Mode6"] == "Debug"):
             Domoticz.Debugging(1)
 
