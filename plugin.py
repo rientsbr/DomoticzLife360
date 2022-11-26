@@ -67,7 +67,7 @@ class BasePlugin:
         if not "Location" in Settings:
             Domoticz.Log("Location not set in Preferences")
             return False
-        
+
         # The location is stored in a string in the Settings
         loc = Settings["Location"].split(";")
         self.myHomelat = float(loc[0])
@@ -77,11 +77,11 @@ class BasePlugin:
         if self.myHomelat == None or self.myHomelon == None:
             Domoticz.Log("Unable to parse coordinates")
             return False
- 
+
         api = life360(authorization_token=self.authorization_token, username=Parameters["Username"], password=Parameters["Password"])
         if api.authenticate():
             Domoticz.Debug("API Authenticated")
-        
+
             #Grab id
             self.id = api.get_circle_id()
             Domoticz.Debug("Circle 0 ID:"+str(self.id))
@@ -115,19 +115,19 @@ class BasePlugin:
             self.selectedMap = "OSM"
         else:
             self.selectedMap = "TM"
-		
+
         if (Parameters["Mode3"] == ""):
             self.tomtomapikey = 'Empty'
         else:
             self.tomtomapikey = Parameters["Mode3"]
-        
+
         try:
             with open(Parameters["HomeFolder"]+"locations.txt") as f:
                 for line in f:
                     self.locationNames.append(line.rstrip('\n').split(','))
         except:
             Domoticz.Log('No locations.txt file found')
-			
+
         self.pollPeriod = 6 * int(Parameters["Mode2"])
         self.pollCount = self.pollPeriod - 1
         Domoticz.Heartbeat(10)
@@ -147,7 +147,7 @@ class BasePlugin:
         action, sep, params = Command.partition(' ')
         action = action.capitalize()
         params = params.capitalize()
- 
+
         if Command=='Off':
             UpdateDevice(Unit,0,'Off')
         elif Command=='On':
@@ -221,7 +221,7 @@ class BasePlugin:
 
                     else:
                         currentloc = self.circlLocationName
-                        if self.circlLocationName == 'Home':
+                        if self.circlLocationName == 'Palladiostraat ':
                             currentmin = 0
                         else: #Location known on Life360, but other than 'Home'
                             if self.selectedMap == "TM":
@@ -243,7 +243,7 @@ class BasePlugin:
                         currentmin = str(int(currentmin//60))
                     except:
                         currentmin = "Error"
-                        
+
                     UpdateDevice((foundDeviceIdx*4)+4,0,currentmin)
                     Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+4)+','+self.circleFirstName)
 
@@ -295,19 +295,19 @@ def onHeartbeat():
 
 def haversine(lat1, lon1, lat2, lon2):
 
-    # convert decimal degrees to radians 
+    # convert decimal degrees to radians
     lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
 
-    # haversine formula 
-    dlon = lon2 - lon1 
-    dlat = lat2 - lat1 
+    # haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
     a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-    c = 2 * asin(sqrt(a)) 
+    c = 2 * asin(sqrt(a))
     r = 6371 # Radius of earth in kilometers. Use 3956 for miles
     return c * r * 1000
-	
+
 def UpdateDevice(Unit, nValue, sValue):
-    # Make sure that the Domoticz device still exists (they can be deleted) before updating it 
+    # Make sure that the Domoticz device still exists (they can be deleted) before updating it
     if (Unit in Devices):
         if (Devices[Unit].nValue != nValue) or (Devices[Unit].sValue != sValue):
             Devices[Unit].Update(nValue=nValue, sValue=str(sValue))
