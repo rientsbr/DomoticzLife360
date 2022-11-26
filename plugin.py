@@ -181,7 +181,7 @@ class BasePlugin:
 
                     foundDeviceIdx = self.deviceFirstName.index(self.circleFirstName)
                     Domoticz.Debug('Foundidx='+str(foundDeviceIdx)+','+self.circleFirstName)
-                    if self.circlLocationName == 'Home':
+                    if self.circlLocationName == 'Palladiostraat ':
                         UpdateDevice((foundDeviceIdx*4)+1,1,'On')
                         Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+1)+','+self.circleFirstName)
                     else:
