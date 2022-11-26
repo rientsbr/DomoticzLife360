@@ -20,5 +20,8 @@ The icons are downloaded from "Free Vector Graphics by www.Vecteezy.com"
 Create a new Life360 "folder" under Domoticz plugins directory. Copy all the files here to the new Life360 folder.
 Restart Domoticz, under Hardware page, select "Life360 Presence" as a new hardware and fill in the required fields. "TomTom API key is not required, but if you want to get current address of a member and driving distance, you should get a TomTom API key and copy-paste here, otherwise leave it empty.
 
+cd domoticz/plugins
+git clone https://github.com/rientsbr/DomoticzLife360.git
+
 ## How to get a TomTom API Key:
 Go to https://developer.tomtom.com/user/register page. Create a new User Account. Login to your account and from 'My Apps', press 'Add a new app' to add a new app and select at least 'Routing API' and 'Search API', you can select all APIs here if you want. Then from the 'Keys' page, copy the 'Consumer API Key' of your app to Life360 plugin setting page - 'TomTom API Key' field. Remember, you have 2.500 daily API calls limit fro free... When you are at 'Home', there are no API calls to TomTom.
