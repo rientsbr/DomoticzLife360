@@ -1,8 +1,9 @@
 """
-<plugin key="Life360" name="Life 360 Presence" author="febalci" version="2.3.1">
+<plugin key="Life360" name="Life 360 Presence" author="rmbrandsma" version="1.0.0">
     <params>
         <param field="Username" label="Life360 Email Address" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
+        <param field="Mode1" label="Naam Thuis" width="150px" required="true" default="Home"/>
         <param field="Mode2" label="Poll Period (min)" width="75px" required="true" default="2"/>
         <param field="Mode4" label="Choose Map provider" width="300px">
             <options>
@@ -110,6 +111,8 @@ class BasePlugin:
             Domoticz.Log('Error Authenticating Life360 or Connection Problem...')
             Domoticz.Log('Please Use Correct Credentials and Restart The Plugin!')
 
+        self.Home = Parameters["Mode1"]
+
         if (Parameters["Mode4"] == "OSM"):
             self.selectedMap = "OSM"
         else:
@@ -180,7 +183,7 @@ class BasePlugin:
 
                     foundDeviceIdx = self.deviceFirstName.index(self.circleFirstName)
                     Domoticz.Debug('Foundidx='+str(foundDeviceIdx)+','+self.circleFirstName)
-                    if self.circlLocationName == 'Palladiostraat ':
+                    if self.circlLocationName == self.Home:
                         UpdateDevice((foundDeviceIdx*4)+1,1,'On')
                         Domoticz.Debug('Updated Device:'+str((foundDeviceIdx*4)+1)+','+self.circleFirstName)
                     else:
@@ -220,7 +223,7 @@ class BasePlugin:
 
                     else:
                         currentloc = self.circlLocationName
-                        if self.circlLocationName == 'Palladiostraat ':
+                        if self.circlLocationName == self.Home:
                             currentmin = 0
                         else: #Location known on Life360, but other than 'Home'
                             if self.selectedMap == "TM":
