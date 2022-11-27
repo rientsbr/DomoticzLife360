@@ -1,5 +1,5 @@
 """
-<plugin key="Life360" name="Life 360 Presence" author="rmbrandsma" version="1.0.0">
+<plugin key="Life360" name="Life 360 Presence" author="rmbrandsma" version="0.1.0">
     <params>
         <param field="Username" label="Life360 Email Address" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>

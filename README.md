@@ -1,11 +1,8 @@
 # Domoticz Life360
 
 
-[![PyPI pyversions](https://img.shields.io/badge/python-3.6%20|%203.7%20|%203.8%203.9-blue.svg)]()
-[![Plugin version](https://img.shields.io/badge/version-0.7.0-red.svg)](https://github.com/belzetrigger/domoticz-FritzPresence/branches/)
-
-Primary a Presence Detector that works with your [Fritz!Box](https://en.avm.de/, 'Fritz!Box are quite famous router from avm'). And also lets you add easily other known hosts from your Box to Domoticz.
-
+[![PyPI pyversions](https://img.shields.io/badge/python-3.6%20|%203.7%20|%203.8%20|3.9-blue.svg)]()
+[![Plugin version](https://img.shields.io/badge/version-0.1.0-red.svg)]()
 
 ## Summary
 
@@ -53,12 +50,7 @@ this functions is not Used
 ## Versions
 | Version | Note                                                                                     |
 | ------- | ---------------------------------------------------------------------------------------- |
-| 0.7.0   | * change handling in case of MAC-List usage. Device names are fetched from Fritz!Box and updated on Heartbeat  <br>* Using domoticz special Parameter User/Password - so please reinsert.<br> * avoid overwriting custom images with default icons during start up<br> * better checking if inserted values are MAC-Addresses                                        |
-| 0.6.4   | small stability fixes, a bit restructure and tested with new version of lib <br>for issue#2, avoid resetting images on startup also if MAC-List is used, so custom symbols will be kept   |
-| 0.6.3   | button to add/remove know hosts from Fritz!Box to Domoticz and support for "Wake on LAN" |
-| 0.6.2   | supports ';' separated list of MAC and names                                             |
-| \>= 0.6 | works with new fritzconnection 1.2.1 and so without need of lxml but Python >= 3.6       |
-| <= 0.5  | worked with fritzconnection 0.6.x and 0.8.x, needs lxml                                  |
+| 0.1.0   | Initial release                                       |
 
 ## State
 Under development but main function runs quite stabile.
