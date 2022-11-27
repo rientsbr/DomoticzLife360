@@ -60,6 +60,12 @@ class BasePlugin:
             Domoticz.Debugging(1)
             DumpConfigToLog()
 
+        try:
+            interval = int(Parameters["Mode2"])
+        except:
+            Domoticz.Error("Invallid polling interval")
+            interval = 2
+
         if ("Life360Presence" not in Images):
             Domoticz.Debug('Icons Created...')
             Domoticz.Image('Life360Presenceicon.zip').Create()
@@ -132,7 +138,7 @@ class BasePlugin:
         except:
             Domoticz.Log('No locations.txt file found')
 
-        self.pollPeriod = 6 * int(Parameters["Mode2"])
+        self.pollPeriod = 6 * int(interval)
         self.pollCount = self.pollPeriod - 1
         Domoticz.Heartbeat(10)
 
