@@ -1,10 +1,5 @@
 """
 <plugin key="Life360" name="Life 360 Presence" author="rmbrandsma" version="0.1.0">
-    <description>
-        <h2>Precense Mobile Devices/h2><br/>
-        This plugin uises the information from the Life360 app.
-        for each member in the first cicle we will generate 4 devices.
-    </description>
     <params>
         <param field="Username" label="Life360 Email Address" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
