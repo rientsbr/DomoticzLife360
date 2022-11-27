@@ -1,16 +1,5 @@
 """
-<plugin key="Life360" name="Life 360 Presence" author="Rients Brandsma" version="0.1.0"
-    externallink="https://github.com/rientsbr/DomoticzLife360" >
-    <!--
-    wikilink="http://www.domoticz.com/wiki/plugins/plugin.html"
-    //-->
-    <description>
-        <h2>Precense Mobile Devices/h2><br/>
-        This plugin uises the information from the Life360 app.
-        So you can determine the presence and distance of people.
-        <h3>Devices</h3>
-        for each member in the first cicle we will generate 4 devices
-    </description>
+<plugin key="Life360" name="Life 360 Presence" author="rmbrandsma" version="0.1.0">
     <params>
         <param field="Username" label="Life360 Email Address" width="150px" required="true" default="username"/>
         <param field="Password" label="Life360 Password" width="150px" required="true" default="password"/>
