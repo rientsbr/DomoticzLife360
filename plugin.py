@@ -33,6 +33,7 @@ from osmapi import osmapi
 import json
 
 class BasePlugin:
+    enabled = False
 
     def __init__(self):
         self.authorization_token = "cFJFcXVnYWJSZXRyZTRFc3RldGhlcnVmcmVQdW1hbUV4dWNyRUh1YzptM2ZydXBSZXRSZXN3ZXJFQ2hBUHJFOTZxYWtFZHI0Vg=="
@@ -57,6 +58,7 @@ class BasePlugin:
         Domoticz.Log("onStart called")
         if (Parameters["Mode6"] == "Debug"):
             Domoticz.Debugging(1)
+            DumpConfigToLog()
 
         if ("Life360Presence" not in Images):
             Domoticz.Debug('Icons Created...')
