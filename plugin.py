@@ -36,7 +36,7 @@ class BasePlugin:
     enabled = False
 
     def __init__(self):
-        self.authorization_token = "YTliNDRlNDAtMjM2OC00OGYxLTk2YWQtOGRlODcyYzVhMzM0"
+        self.authorization_token = "cFJFcXVnYWJSZXRyZTRFc3RldGhlcnVmcmVQdW1hbUV4dWNyRUh1YzptM2ZydXBSZXRSZXN3ZXJFQ2hBUHJFOTZxYWtFZHI0Vg=="
         self.deviceFirstName = []
         self.membercount = 0
         self.id = ''
