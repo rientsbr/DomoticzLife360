@@ -7,6 +7,7 @@ import json
 class life360:
     
     base_url = "https://api-cloudfront.life360.com/v3/"
+    USER_AGENT = "com.life360.android.safetymapd"
     token_url = "oauth2/token.json"
     circles_url = "circles.json"
     circle_url = "circles/"
@@ -18,7 +19,8 @@ class life360:
 
     def make_request(self, url, params=None, method='GET', authheader=None):
         headers = {
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'user-agent': USER_AGENT,
         }
         if authheader:
             headers.update({'Authorization': authheader, 'cache-control': "no-cache",})
