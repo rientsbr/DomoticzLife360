@@ -7,10 +7,10 @@ import json
 class life360:
     
     base_url = "https://api-cloudfront.life360.com/v3/"
-    USER_AGENT = "com.life360.android.safetymapd"
     token_url = "oauth2/token.json"
     circles_url = "circles.json"
     circle_url = "circles/"
+    user_agent = "com.life360.android.safetymapd"
 
     def __init__(self, authorization_token=None, username=None, password=None):
         self.authorization_token = authorization_token
@@ -18,30 +18,16 @@ class life360:
         self.password = password
 
     def make_request(self, url, params=None, method='GET', authheader=None):
-        headers = {
-            'Accept': 'application/json',
-            'user-agent': 'com.life360.android.safetymapd'
-        }
+        headers = {'Accept': 'application/json', "user-agent": self.user_agent}
         if authheader:
             headers.update({'Authorization': authheader, 'cache-control': "no-cache",})
         
         if method == 'GET':
-            request = urllib.request.Request(url, headers=headers)
+            r = requests.get(url, headers=headers)            
         elif method == 'POST':
-            request = urllib.request.Request(url, data=(urllib.parse.urlencode(params)).encode('utf-8'), headers=headers)
+            r = requests.post(url, data=params, headers=headers)
 
-        try:
-            r = urllib.request.urlopen(request)
-        except HTTPError as e:
-            Domoticz.Log('Life360 HTTPError code: '+ str(e.code))
-            jsonr = 'Error'
-        except URLError as e:
-            Domoticz.Log('Life360 URLError Reason: '+ str(e.reason))
-            jsonr = 'Error'
-        else:
-            jsonr = json.loads(r.read().decode('utf-8'))
-
-        return jsonr
+       return r.json()
 
     def authenticate(self):
         url = self.base_url + self.token_url
