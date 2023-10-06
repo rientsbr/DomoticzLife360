@@ -6,7 +6,7 @@ import json
 
 class life360:
     
-    base_url = "https://api.life360.com/v3/"
+    base_url = "https://api-cloudfront.life360.com/v3/"
     token_url = "oauth2/token.json"
     circles_url = "circles.json"
     circle_url = "circles/"
