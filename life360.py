@@ -20,7 +20,7 @@ class life360:
     def make_request(self, url, params=None, method='GET', authheader=None):
         headers = {
             'Accept': 'application/json',
-            'user-agent': USER_AGENT,
+            'user-agent': 'com.life360.android.safetymapd'
         }
         if authheader:
             headers.update({'Authorization': authheader, 'cache-control': "no-cache",})
