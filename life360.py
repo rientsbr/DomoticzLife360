@@ -6,11 +6,11 @@ import json
 
 class life360:
     
-    base_url = "https://api-cloudfront.life360.com/v3/"
-    token_url = "oauth2/token.json"
+    base_url = "https://api-cloudfront.life360.com/v4/"
+    token_url = "oauth2/token"
     circles_url = "circles.json"
-    circle_url = "circles/"
-    user_agent = "com.life360.android.safetymapd"
+    circle_url = "circles"
+    user_agent = "com.life360.android.safetymapd/KOKO/23.49.0 android/13"
 
     def __init__(self, authorization_token=None, username=None, password=None):
         self.authorization_token = authorization_token
